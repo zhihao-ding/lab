@@ -12,6 +12,12 @@ class Command(object):
 
     def help(self, args=None):
         print('help ...')
+		'''
+		import inspect
+		member = getattr(self, method, None)
+		if inspect.ismethod(member):
+		    print('{} : {}'.format(member.__name__, member.__doc__))
+		'''
 
     def clear(self, args=None):
         """clear screem"""
