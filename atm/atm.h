@@ -23,7 +23,7 @@ public:
 
 	void run()
 	{
-	    state = &waiting_for_card;
+	    state = &atm::waiting_for_card;
         try
 		{
 		    for(;;)
@@ -46,9 +46,9 @@ private:
 	{
 	    incoming.wait().handle<withdraw_ok>(
 		[&](withdraw_ok const& msg){
-		    interface_hardware.send(issue_money(withdrawl_amount));
-			bank.send(withdrawal_processed(amount, withdrawal_amount));
-			state = &&atm::done_processing;
+		    interface_hardware.send(issue_money(withdrawal_amount));
+			bank.send(withdrawal_processed(account, withdrawal_amount));
+			state = &atm::done_processing;
 		}).handle<withdraw_denied>(
 		[&](withdraw_denied const& msg){
 		    interface_hardware.send(display_insufficient_funds());
@@ -117,7 +117,7 @@ private:
 			if (pin.length() == pin_length)
 			{
 			    bank.send(verify_pin(account, pin, incoming));
-			    state = &atm::verify_pin;
+			    state = &atm::verifying_pin;
 			}
 		}).handle<clear_last_pressed>(
 		[&](clear_last_pressed const& msg){

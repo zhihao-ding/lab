@@ -102,7 +102,7 @@ struct display_insufficient_funds {};
 
 struct display_withdrawal_cancelled {};
 
-struct display_pin_incorrent_message {};
+struct display_pin_incorrect_message {};
 
 struct display_withdrawal_options {};
 

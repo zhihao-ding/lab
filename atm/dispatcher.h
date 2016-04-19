@@ -21,7 +21,7 @@ namespace messaging
 		    other.chained = true;
 		}
 
-		TemplateDispatcher(queue *q_ptr_, PreviousDispatcher *prev_ptr, Function&& f_):
+		TemplateDispatcher(queue *q_ptr_, PreviousDispatcher *prev_ptr_, Function&& f_):
 			q_ptr(q_ptr_), prev_ptr(prev_ptr_), f(std::forward<Function>(f_)),
 			chained(false)
 		{

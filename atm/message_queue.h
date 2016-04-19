@@ -14,7 +14,7 @@ namespace messaging
 	};
 
 	template<typename Message>
-	struct wrapped_messge: message_base
+	struct wrapped_message: message_base
 	{
 	    Message contents;
 		explicit wrapped_message(Message const& contents_):
