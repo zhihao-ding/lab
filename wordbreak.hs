@@ -1,54 +1,58 @@
--- file: wordbreak.hs
+-- file: WordBreak.hs
 
 import Data.List(isPrefixOf)
 
 str = "dogandcat"
-dict = ["do", "d", "gand", "and", "dog", "cat", "c", "at"]
+dict = ["do", "d", "gand", "g", "and", "dog", "cat", "c", "at"]
 
 getStarts :: String -> [String]
 getStarts [] = []
 getStarts str = filter (`isPrefixOf` str) dict
 
-getEnds :: String -> [Breaker]
-getEnds [] = [Empty]
-getEnds str 
-    | (length (getStarts str)) == 0 = [Empty]
-    | otherwise = map (\x -> Node [x] (drop (length x) str)) (getStarts str)
-
-data Breaker = Node {result :: [String], left :: String} | Empty
+data Breaker = Middle {before :: [String], left :: String} | Result {result :: [String]} | Empty
                 deriving (Eq, Show)
 
-middleHelp :: Breaker -> [Breaker]
-middleHelp Empty = [Empty]
-middleHelp (Node r l)
-    | null l = [Node r l]
-    | (not (null l)) && (length (getStarts l)) == 0 = [Empty]
-    | otherwise = map (\x -> Node (r ++ (result x)) (left x)) (getEnds l)
+isFinished :: [Breaker] -> Bool
+isFinished [] = True
+isFinished (x:xs) =
+    case x of
+        Empty -> isFinished xs
+        Result r -> isFinished xs
+        Middle b l -> False
 
-middleHelpWrapper :: [Breaker] -> [Breaker]
-middleHelpWrapper breakers =
-    let middles = map middleHelp breakers
-    in if (length middles) == 0
-       then []
-       else clearBreakers (foldr (++) [] middles)
+filterEmpty :: [Breaker] -> [Breaker]
+filterEmpty [] = []
+filterEmpty (x:xs) =
+    case x of
+        Empty -> filterEmpty xs
+        _ -> x : filterEmpty xs
 
-clearBreakers :: [Breaker] -> [Breaker]
-clearBreakers [] = []
-clearBreakers breakers = filter (\x -> not (x == Empty)) breakers
+breakOne :: Breaker -> [Breaker]
+breakOne Empty = []
+breakOne (Result r) = [Result r]
+breakOne (Middle b l)
+    | null l = [Result b]
+    | otherwise =
+        let starts = getStarts l
+            in if (length starts) == 0 then [Empty]
+               else map (\x -> Middle (b ++ [x]) (drop (length x) l)) starts
 
-getMiddle str = middleHelpWrapper (getEnds str)
+breakMore :: [Breaker] -> [Breaker]
+breakMore [] = []
+breakMore (x:xs) = (breakOne x) ++ (breakMore xs)
 
-lastHelp :: [Breaker] -> [Breaker]
-lastHelp [] = []
-lastHelp breakers =
-    let userfull = clearBreakers breakers
-    in let unfinished = filter (\x -> (length (left x)) > 0) userfull
-       in if (length unfinished) == 0
-          then userfull
-          else lastHelp (clearBreakers (middleHelpWrapper userfull))
+breakAll :: [Breaker] -> [Breaker]
+breakAll [] = []
+breakAll xs =
+    if isFinished xs then xs
+    else breakAll (breakMore xs)
 
-getLast str = lastHelp (getMiddle str)
+doBreak :: String -> [Breaker]
+doBreak [] = []
+doBreak str = filterEmpty (breakAll begin)
+    where begin = breakOne (Middle [] str)
 
-
-wordBreak str = map (\x -> result x) (getLast str)
+wordBreak :: String -> [[String]]
+wordBreak [] = []
+wordBreak str = map (\x -> result x) (doBreak str)
 
